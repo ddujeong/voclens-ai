@@ -11,3 +11,15 @@ export async function getProducts() {
 
     return response.json();
 }
+
+export async function getProduct(productId: string) {
+    const response = await fetch(`${BASE_URL}/products/${productId}`, {
+        cache: "no-store",
+    });
+
+    if (!response.ok) {
+        throw new Error("상품 상세 조회 실패");
+    }
+
+    return response.json();
+}
