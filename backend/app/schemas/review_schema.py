@@ -17,3 +17,15 @@ class ReviewResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        
+class AdminReviewSearchResponse(BaseModel):
+    id: int
+    product_id: int
+    product_name: str
+    rating: int
+    content: str
+    sentiment: str | None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
