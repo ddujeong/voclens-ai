@@ -26,3 +26,8 @@ class ProductReviewStatResponse(BaseModel):
     total_reviews: int
     negative_reviews: int
     negative_rate: float
+    
+class SentimentDistributionResponse(BaseModel):
+    sentiment: str
+    count: int
+    rate: float

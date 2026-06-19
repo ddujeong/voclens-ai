@@ -10,7 +10,8 @@ from app.schemas.dashboard_schema import (
     DashboardKpiResponse,
     DashboardVocResponse,
     VocKeywordResponse,
-    ProductReviewStatResponse
+    ProductReviewStatResponse,
+    SentimentDistributionResponse
 )
 from app.core.voc_keywords import COMPLAINT_KEYWORDS
 
@@ -147,6 +148,38 @@ def get_product_review_stats(
                 total_reviews=total,
                 negative_reviews=negative,
                 negative_rate=negative_rate,
+            )
+        )
+
+    return result
+
+@router.get(
+    "/sentiment",
+    response_model=list[SentimentDistributionResponse]
+)
+def get_sentiment_distribution(
+    db: Session = Depends(get_db)
+):
+    total = db.query(Review).count()
+
+    sentiments = ["positive", "negative", "neutral"]
+
+    result = []
+
+    for sentiment in sentiments:
+        count = (
+            db.query(Review)
+            .filter(Review.sentiment == sentiment)
+            .count()
+        )
+
+        rate = 0 if total == 0 else round((count / total) * 100, 1)
+
+        result.append(
+            SentimentDistributionResponse(
+                sentiment=sentiment,
+                count=count,
+                rate=rate,
             )
         )
 
