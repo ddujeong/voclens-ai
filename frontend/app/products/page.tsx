@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getProducts } from "@/services/product";
 import { Product } from "@/types/product";
 
+
 export default async function ProductsPage() {
     const products: Product[] = await getProducts();
 

@@ -11,3 +11,28 @@ export async function getReviews(productId: string) {
 
     return response.json();
 }
+export async function createReview(
+    productId: string,
+    rating: number,
+    content: string
+) {
+    const response = await fetch(
+        `http://127.0.0.1:8000/products/${productId}/reviews`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                rating,
+                content,
+            }),
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error("리뷰 작성 실패");
+    }
+
+    return response.json();
+}

@@ -2,6 +2,7 @@ import { getProduct } from "@/services/product";
 import { getReviews } from "@/services/review";
 import { Product } from "@/types/product";
 import { Review } from "@/types/review";
+import ReviewForm from "@/components/product/ReviewForm";
 
 interface ProductDetailPageProps {
     params: Promise<{
@@ -29,6 +30,7 @@ export default async function ProductDetailPage({
             </section>
 
             <section className="mt-8">
+                <ReviewForm productId={id} />
                 <h2 className="text-xl font-bold">리뷰</h2>
 
                 <div className="mt-4 grid gap-4">
