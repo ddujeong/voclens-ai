@@ -1,9 +1,10 @@
-import { getKpi, getProductStats, getVoc } from "@/services/dashboard";
+import { getKpi, getProductStats, getVoc, getSentiment } from "@/services/dashboard";
 
 export default async function AdminDashboardPage() {
     const kpi = await getKpi();
     const voc = await getVoc();
     const productStats = await getProductStats();
+    const sentiment = await getSentiment();
 
     return (
         <main className="p-8">
@@ -61,6 +62,40 @@ export default async function AdminDashboardPage() {
                                     리뷰 {item.total_reviews}건 / 부정 {item.negative_reviews}건 /{" "}
                                     {item.negative_rate}%
                                 </p>
+                            </div>
+                        )
+                    )}
+                </div>
+            </section>
+            <section className="mt-8 rounded border p-4">
+                <h2 className="text-xl font-bold">
+                    감성 분포
+                </h2>
+
+                <div className="mt-4 grid gap-2">
+                    {sentiment.map(
+                        (item: {
+                            sentiment: string;
+                            count: number;
+                            rate: number;
+                        }) => (
+                            <div
+                                key={item.sentiment}
+                                className="border-b py-2"
+                            >
+                                <div className="flex justify-between">
+                                    <span>{item.sentiment}</span>
+                                    <span>{item.rate}%</span>
+                                </div>
+
+                                <div className="mt-2 h-3 rounded bg-gray-200">
+                                    <div
+                                        className="h-3 rounded bg-black"
+                                        style={{
+                                            width: `${item.rate}%`,
+                                        }}
+                                    />
+                                </div>
                             </div>
                         )
                     )}

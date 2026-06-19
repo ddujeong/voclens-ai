@@ -26,3 +26,14 @@ export async function getProductStats() {
 
     return response.json();
 }
+
+export async function getSentiment() {
+    const response = await fetch(
+        `${BASE_URL}/admin/dashboard/sentiment`,
+        {
+            cache: "no-store",
+        }
+    );
+
+    return response.json();
+}
