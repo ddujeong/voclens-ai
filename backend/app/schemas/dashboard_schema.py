@@ -11,3 +11,11 @@ class DashboardKpiResponse(BaseModel):
     positive_rate: float
     negative_rate: float
     neutral_rate: float
+    
+class VocKeywordResponse(BaseModel):
+    keyword: str
+    count: int
+
+
+class DashboardVocResponse(BaseModel):
+    top_complaints: list[VocKeywordResponse]
