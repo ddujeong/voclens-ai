@@ -37,3 +37,20 @@ export async function getSentiment() {
 
     return response.json();
 }
+
+export async function searchReviews(
+    keyword: string
+) {
+    const response = await fetch(
+        `http://127.0.0.1:8000/admin/reviews/search?keyword=${keyword}`,
+        {
+            cache: "no-store",
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error("리뷰 검색 실패");
+    }
+
+    return response.json();
+}
