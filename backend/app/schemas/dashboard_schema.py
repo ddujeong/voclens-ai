@@ -19,3 +19,10 @@ class VocKeywordResponse(BaseModel):
 
 class DashboardVocResponse(BaseModel):
     top_complaints: list[VocKeywordResponse]
+
+class ProductReviewStatResponse(BaseModel):
+    product_id: int
+    product_name: str
+    total_reviews: int
+    negative_reviews: int
+    negative_rate: float

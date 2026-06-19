@@ -4,10 +4,13 @@ from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
 from app.models.review import Review
 from collections import Counter
+from app.models.product import Product
+
 from app.schemas.dashboard_schema import (
     DashboardKpiResponse,
     DashboardVocResponse,
     VocKeywordResponse,
+    ProductReviewStatResponse
 )
 from app.core.voc_keywords import COMPLAINT_KEYWORDS
 
@@ -107,3 +110,44 @@ def get_voc_analysis(
             for keyword, count in top_keywords
         ]
     )
+    
+@router.get(
+    "/products",
+    response_model=list[ProductReviewStatResponse]
+)
+def get_product_review_stats(
+    db: Session = Depends(get_db)
+):
+    products = db.query(Product).all()
+
+    result = []
+
+    for product in products:
+        total = (
+            db.query(Review)
+            .filter(Review.product_id == product.id)
+            .count()
+        )
+
+        negative = (
+            db.query(Review)
+            .filter(
+                Review.product_id == product.id,
+                Review.sentiment == "negative"
+            )
+            .count()
+        )
+
+        negative_rate = 0 if total == 0 else round((negative / total) * 100, 1)
+
+        result.append(
+            ProductReviewStatResponse(
+                product_id=product.id,
+                product_name=product.name,
+                total_reviews=total,
+                negative_reviews=negative,
+                negative_rate=negative_rate,
+            )
+        )
+
+    return result
