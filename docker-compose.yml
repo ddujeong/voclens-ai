@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: voclens-postgres
+
+    environment:
+      POSTGRES_USER: voclens
+      POSTGRES_PASSWORD: voclens
+      POSTGRES_DB: voclens_db
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
