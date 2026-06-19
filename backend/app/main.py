@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.api.product_api import router as product_router
 from app.api.review_api import router as review_router
+from app.api.dashboard_api import router as dashboard_router
 from app.core.database import Base, engine
 from app.models import Product, Review
 
@@ -11,6 +12,7 @@ app = FastAPI(title="VOCLens AI API")
 
 app.include_router(product_router)
 app.include_router(review_router)
+app.include_router(dashboard_router)
 
 
 @app.get("/")
