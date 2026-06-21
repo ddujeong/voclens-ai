@@ -4,7 +4,7 @@ from sentence_transformers import SentenceTransformer
 class EmbeddingService:
 
     model = SentenceTransformer(
-        "all-MiniLM-L6-v2"
+        "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     )
 
     @classmethod
@@ -12,7 +12,4 @@ class EmbeddingService:
         cls,
         text: str,
     ) -> list[float]:
-
-        return cls.model.encode(
-            text
-        ).tolist()
+        return cls.model.encode(text).tolist()
