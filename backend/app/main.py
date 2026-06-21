@@ -6,6 +6,7 @@ from app.api.review_api import router as review_router
 from app.api.dashboard_api import router as dashboard_router
 from app.api.admin_review_api import router as admin_review_router
 from app.api.admin_chat_api import router as admin_chat_router
+from app.api.rag_test_api import router as rag_test_router
 
 from app.core.database import Base, engine
 from app.models import Product, Review, ReviewDocument
@@ -30,7 +31,7 @@ app.include_router(review_router)
 app.include_router(dashboard_router)
 app.include_router(admin_review_router)
 app.include_router(admin_chat_router)
-
+app.include_router(rag_test_router)
 @app.get("/")
 def health_check():
     return {"message": "VOCLens AI backend is running"}
