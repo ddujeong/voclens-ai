@@ -40,10 +40,9 @@ def chat(
         .all()
     )
 
-    answer = (
-        AdminChatService.analyze_top_complaint(
-            reviews
-        )
+    answer = AdminChatService.analyze_top_complaint(
+        question=request.question,
+        reviews=reviews,
     )
 
     return ChatResponse(

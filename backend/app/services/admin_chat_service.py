@@ -2,13 +2,16 @@ from collections import Counter
 
 from app.core.voc_keywords import COMPLAINT_KEYWORDS
 from app.models.review import Review
+from app.services.gemini_service import GeminiService
 
 
 class AdminChatService:
 
     @staticmethod
-    def analyze_top_complaint(reviews: list[Review]) -> str:
-
+    def analyze_top_complaint(
+        question: str,
+        reviews: list[Review],
+    ) -> str:
         counter = Counter()
 
         for review in reviews:
@@ -17,9 +20,7 @@ class AdminChatService:
                     counter[keyword] += 1
 
         if not counter:
-            return (
-                "현재 분석 가능한 부정 리뷰가 부족합니다."
-            )
+            return "현재 분석 가능한 부정 리뷰가 부족합니다."
 
         keyword, count = counter.most_common(1)[0]
 
@@ -29,14 +30,25 @@ class AdminChatService:
             if keyword in review.content
         ]
 
-        answer = (
-            f"현재 가장 많이 언급되는 불만은 "
-            f"'{keyword}'입니다.\n"
-            f"총 {count}건 언급되었습니다.\n\n"
-            f"관련 리뷰 예시:\n"
-        )
+        try:
+            gemini_service = GeminiService()
 
-        for review in related_reviews[:3]:
-            answer += f"- {review}\n"
+            return gemini_service.generate_admin_answer(
+                question=question,
+                top_keyword=keyword,
+                count=count,
+                related_reviews=related_reviews,
+            )
 
-        return answer
+        except Exception:
+            answer = (
+                f"현재 가장 많이 언급되는 불만은 "
+                f"'{keyword}'입니다.\n"
+                f"총 {count}건 언급되었습니다.\n\n"
+                f"관련 리뷰 예시:\n"
+            )
+
+            for review in related_reviews[:3]:
+                answer += f"- {review}\n"
+
+            return answer
