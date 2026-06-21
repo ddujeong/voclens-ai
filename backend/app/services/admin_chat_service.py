@@ -1,52 +1,47 @@
-from collections import Counter
-
-from app.core.voc_keywords import COMPLAINT_KEYWORDS
-from app.models.review import Review
 from app.services.gemini_service import GeminiService
+from app.services.review_rag_service import ReviewRagService
 
 
 class AdminChatService:
 
     @staticmethod
-    def analyze_top_complaint(
+    def answer_with_rag(
         question: str,
-        reviews: list[Review],
+        db,
     ) -> str:
-        counter = Counter()
+        rag_results = ReviewRagService.search(
+            question=question,
+            db=db,
+            limit=5,
+        )
 
-        for review in reviews:
-            for keyword in COMPLAINT_KEYWORDS:
-                if keyword in review.content:
-                    counter[keyword] += 1
+        print("\n===== QUESTION =====")
+        print(question)
 
-        if not counter:
-            return "현재 분석 가능한 부정 리뷰가 부족합니다."
+        print("\n===== RAG RESULTS =====")
 
-        keyword, count = counter.most_common(1)[0]
+        for row in rag_results:
+            print(row.content)
+            print("score =", row.score)
 
         related_reviews = [
-            review.content
-            for review in reviews
-            if keyword in review.content
+            row.content
+            for row in rag_results
         ]
+
+        if not related_reviews:
+            return "질문과 관련된 리뷰 데이터를 찾지 못했습니다."
 
         try:
             gemini_service = GeminiService()
 
-            return gemini_service.generate_admin_answer(
+            return gemini_service.generate_rag_answer(
                 question=question,
-                top_keyword=keyword,
-                count=count,
                 related_reviews=related_reviews,
             )
 
         except Exception:
-            answer = (
-                f"현재 가장 많이 언급되는 불만은 "
-                f"'{keyword}'입니다.\n"
-                f"총 {count}건 언급되었습니다.\n\n"
-                f"관련 리뷰 예시:\n"
-            )
+            answer = "관련 리뷰를 기반으로 요약한 결과입니다.\n\n"
 
             for review in related_reviews[:3]:
                 answer += f"- {review}\n"

@@ -53,3 +53,36 @@ class GeminiService:
         )
 
         return response.text
+    
+    def generate_rag_answer(
+        self,
+        question: str,
+        related_reviews: list[str],
+    ) -> str:
+
+        review_text = "\n".join(
+            [f"- {review}" for review in related_reviews]
+        )
+
+        prompt = f"""
+    당신은 쇼핑몰 운영자를 위한 VOC 분석 AI 에이전트입니다.
+
+    운영자 질문:
+    {question}
+
+    검색된 관련 리뷰:
+    {review_text}
+
+    답변 규칙:
+    1. 리뷰를 근거로만 답변합니다.
+    2. 핵심 불만 또는 만족 포인트를 요약합니다.
+    3. 개선 우선순위를 제안합니다.
+    4. 리뷰에 없는 내용은 추측하지 않습니다.
+    """
+
+        response = self.client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+        )
+
+        return response.text
