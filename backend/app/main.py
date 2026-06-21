@@ -8,7 +8,7 @@ from app.api.admin_review_api import router as admin_review_router
 from app.api.admin_chat_api import router as admin_chat_router
 
 from app.core.database import Base, engine
-from app.models import Product, Review
+from app.models import Product, Review, ReviewDocument
 
 Base.metadata.create_all(bind=engine)
 
