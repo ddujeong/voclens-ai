@@ -86,3 +86,36 @@ class GeminiService:
         )
 
         return response.text
+    
+    def analyze_review_sentiment(
+        self,
+        content: str,
+    ) -> str:
+        prompt = f"""
+    다음 쇼핑몰 리뷰의 감성을 분류하세요.
+
+    리뷰:
+    {content}
+
+    분류 기준:
+    - positive: 만족, 장점, 긍정 평가
+    - negative: 불만, 문제점, 개선 필요
+    - neutral: 긍정과 부정이 섞이거나 판단이 애매함
+
+    반드시 아래 셋 중 하나만 출력하세요.
+    positive
+    negative
+    neutral
+    """
+
+        response = self.client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+        )
+
+        sentiment = response.text.strip().lower()
+
+        if sentiment not in ["positive", "negative", "neutral"]:
+            return "neutral"
+
+        return sentiment
