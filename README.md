@@ -4,13 +4,20 @@
 
 운영자는 대시보드를 통해 리뷰 현황을 확인하고, AI 챗봇을 통해 고객 의견을 자연어로 분석할 수 있습니다.
 
+ABSA 모델을 활용하여 리뷰를 자동 태깅하고 감성을 분류하며,
+운영자의 자연어 질문을 태그·감성 조건으로 변환한 뒤
+Vector Search와 결합하여 관련 VOC를 탐색할 수 있도록 구현했습니다.
+
 ---
+
+AI-Hub 패션 리뷰 데이터 35,800건을 활용하여 ABSA(Aspect-Based Sentiment Analysis) 기반 리뷰 태그 및 감성 분류 모델을 구축하고, 이를 RAG 검색 파이프라인에 적용하여 운영자가 자연어 질문으로 VOC를 탐색할 수 있도록 설계한 서비스입니다.
 
 ## 프로젝트 목표
 
 * 사용자 리뷰 데이터 수집
 * 리뷰 통계 시각화
-* VOC 분석
+* ABSA 기반 리뷰 태그 및 감성 분석
+* VOC 데이터 자동 분류
 * 리뷰 기반 RAG 검색
 * AI 운영자 챗봇 구현
 
@@ -34,8 +41,9 @@
 
 * VOC 분석
 
-  * 리뷰 감성 분류
-  * 고객 불만 키워드 분석
+  * ABSA 기반 리뷰 태그 분류
+  * 긍정/부정/중립 감성 분석
+  * 고객 VOC 카테고리 분석
 
 * 리뷰 검색
 
@@ -58,9 +66,15 @@ Frontend (Next.js)
         ↓
 Backend (FastAPI)
         ↓
-PostgreSQL
+────────────────────
+│ Review Service   │
+│ ABSA Classifier  │
+│ RAG Service      │
+────────────────────
         ↓
-Review Storage
+PostgreSQL + pgvector
+        ↓
+Review / Embedding Storage
 ```
 
 ### RAG Pipeline
@@ -74,7 +88,12 @@ pgvector 저장
 
 운영자 질문
         ↓
-Embedding 생성
+ABSA 분류 모델
+        ↓
+Tag 추론
+Sentiment 추론
+        ↓
+필터링
         ↓
 Vector Similarity Search
         ↓
@@ -111,8 +130,10 @@ VOC 분석 답변 생성
 
 * Gemini 3.1 Flash Lite
 * Sentence Transformers
-* paraphrase-multilingual-MiniLM-L12-v2
 * RAG (Retrieval-Augmented Generation)
+* TF-IDF
+* Logistic Regression
+* ABSA (Aspect-Based Sentiment Analysis)
 
 ---
 
@@ -133,6 +154,11 @@ VOC 분석 답변 생성
 * [x] Vector Similarity Search
 * [x] 리뷰 기반 RAG
 * [x] AI 챗봇
+* [x] 패션 리뷰 데이터셋 구축 (35,800건)
+* [x] ABSA 학습 데이터 생성
+* [x] 리뷰 태그 분류 모델 학습
+* [x] 리뷰 감성 분류 모델 학습
+* [x] 질문 의도 기반 VOC 검색
 
 ---
 
@@ -140,7 +166,8 @@ VOC 분석 답변 생성
 
 * 리뷰 데이터 1000건 이상 확장
 * 하이브리드 검색(BM25 + Vector Search) 적용
-* 감성 분석 모델 고도화
+* 태그 분류 모델 고도화
 * 상품별 VOC 자동 리포트 생성
-* 실시간 리뷰 수집 파이프라인 구축
+* VOC 트렌드 분석
+* ABSA 모델 고도화
 * 관리자 AI Agent 기능 확장
