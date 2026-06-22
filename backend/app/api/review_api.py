@@ -49,17 +49,21 @@ def create_review(
 
     try:
         gemini_service = GeminiService()
-        sentiment = gemini_service.analyze_review_sentiment(
-            request.content
-        )
+        metadata = gemini_service.analyze_review_metadata(request.content)
+
+        sentiment = metadata["sentiment"]
+        tags = ",".join(metadata["tags"])
+
     except Exception:
         sentiment = "neutral"
+        tags = ""
 
     review = Review(
         product_id=product_id,
         rating=request.rating,
         content=request.content,
         sentiment=sentiment,
+        tags=tags,
     )
 
     db.add(review)
