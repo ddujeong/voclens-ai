@@ -1,7 +1,8 @@
-import os
+import os, json
 
 from dotenv import load_dotenv
 from google import genai
+
 
 load_dotenv()
 
@@ -86,3 +87,102 @@ class GeminiService:
         )
 
         return response.text
+    
+    def analyze_review_sentiment(
+        self,
+        content: str,
+    ) -> str:
+        prompt = f"""
+    다음 쇼핑몰 리뷰의 감성을 분류하세요.
+
+    리뷰:
+    {content}
+
+    분류 기준:
+    - positive: 만족, 장점, 긍정 평가
+    - negative: 불만, 문제점, 개선 필요
+    - neutral: 긍정과 부정이 섞이거나 판단이 애매함
+
+    반드시 아래 셋 중 하나만 출력하세요.
+    positive
+    negative
+    neutral
+    """
+
+        response = self.client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+        )
+
+        sentiment = response.text.strip().lower()
+
+        if sentiment not in ["positive", "negative", "neutral"]:
+            return "neutral"
+
+        return sentiment
+    
+    def analyze_review_metadata(
+        self,
+        content: str,
+    ) -> dict:
+        prompt = f"""
+다음 쇼핑몰 리뷰를 분석하세요.
+
+리뷰:
+{content}
+
+분석 항목:
+1. sentiment: positive, negative, neutral 중 하나
+2. tags: 리뷰 핵심 키워드 1~3개
+
+태그 예시:
+배터리, 충전, 가격, 가성비, 배송, 포장, AS, 소음, 무게, 흡입력, 내구성, 디자인, 사용성
+
+반드시 JSON만 출력하세요.
+
+예시:
+{{
+"sentiment": "negative",
+"tags": ["배터리", "충전"]
+}}
+"""
+
+        response = self.client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+        )
+
+        try:
+            raw_text = response.text.strip()
+
+            raw_text = raw_text.replace("```json", "")
+            raw_text = raw_text.replace("```", "")
+            raw_text = raw_text.strip()
+
+            result = json.loads(raw_text)
+
+            sentiment = result.get("sentiment", "neutral")
+            tags = result.get("tags", [])
+
+            if sentiment not in ["positive", "negative", "neutral"]:
+                sentiment = "neutral"
+
+            if not isinstance(tags, list):
+                tags = []
+
+            tags = [
+                str(tag).strip()
+                for tag in tags
+                if str(tag).strip()
+            ][:3]
+
+            return {
+                "sentiment": sentiment,
+                "tags": tags,
+            }
+
+        except Exception:
+            return {
+                "sentiment": "neutral",
+                "tags": [],
+            }

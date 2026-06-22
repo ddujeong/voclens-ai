@@ -5,6 +5,7 @@ from app.core.database import SessionLocal
 from app.models.product import Product
 from app.models.review import Review
 from app.schemas.review_schema import ReviewCreateRequest, ReviewResponse
+from app.services.gemini_service import GeminiService
 
 router = APIRouter(
     prefix="/products/{product_id}/reviews",
@@ -46,11 +47,23 @@ def create_review(
     if product is None:
         raise HTTPException(status_code=404, detail="상품을 찾을 수 없습니다.")
 
+    try:
+        gemini_service = GeminiService()
+        metadata = gemini_service.analyze_review_metadata(request.content)
+
+        sentiment = metadata["sentiment"]
+        tags = ",".join(metadata["tags"])
+
+    except Exception:
+        sentiment = "neutral"
+        tags = ""
+
     review = Review(
         product_id=product_id,
         rating=request.rating,
         content=request.content,
-        sentiment=None,
+        sentiment=sentiment,
+        tags=tags,
     )
 
     db.add(review)
