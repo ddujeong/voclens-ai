@@ -1,5 +1,8 @@
 from app.services.gemini_service import GeminiService
-from app.services.review_rag_service import ReviewRagService
+from app.services.review_rag_service import (
+    ReviewRagService,
+    detect_query_sentiment,
+)
 
 
 class AdminChatService:
@@ -8,42 +11,74 @@ class AdminChatService:
     def answer_with_rag(
         question: str,
         db,
+        product_id: int | None = None,
     ) -> str:
-        rag_results = ReviewRagService.search(
-            question=question,
-            db=db,
-            limit=5,
-        )
 
-        print("\n===== QUESTION =====")
-        print(question)
-
-        print("\n===== RAG RESULTS =====")
-
-        for row in rag_results:
-            print(row.content)
-            print("score =", row.score)
-
-        related_reviews = [
-            row.content
-            for row in rag_results
-        ]
-
-        if not related_reviews:
-            return "질문과 관련된 리뷰 데이터를 찾지 못했습니다."
+        sentiment_filter = detect_query_sentiment(question)
+        gemini_service = GeminiService()
 
         try:
-            gemini_service = GeminiService()
+            if sentiment_filter is None:
+                positive_results = ReviewRagService.search_by_sentiment(
+                    question=question,
+                    db=db,
+                    sentiment="positive",
+                    limit=5,
+                    product_id=product_id,
+                )
 
-            return gemini_service.generate_rag_answer(
+                negative_results = ReviewRagService.search_by_sentiment(
+                    question=question,
+                    db=db,
+                    sentiment="negative",
+                    limit=5,
+                    product_id=product_id,
+                )
+
+                positive_reviews = [
+                    row.content
+                    for row in positive_results
+                ]
+
+                negative_reviews = [
+                    row.content
+                    for row in negative_results
+                ]
+
+                if not positive_reviews and not negative_reviews:
+                    return "질문과 관련된 리뷰 데이터를 찾지 못했습니다."
+
+                return gemini_service.generate_voc_comparison_report(
+                    question=question,
+                    positive_reviews=positive_reviews,
+                    negative_reviews=negative_reviews,
+                )
+
+            rag_results = ReviewRagService.search(
                 question=question,
-                related_reviews=related_reviews,
+                db=db,
+                limit=5,
+                product_id=product_id,
             )
 
-        except Exception:
-            answer = "관련 리뷰를 기반으로 요약한 결과입니다.\n\n"
+            related_reviews = [
+                row.content
+                for row in rag_results
+            ]
 
-            for review in related_reviews[:3]:
-                answer += f"- {review}\n"
+            if not related_reviews:
+                return "질문과 관련된 리뷰 데이터를 찾지 못했습니다."
 
-            return answer
+            review_text = "\n".join(
+                f"- {review}"
+                for review in related_reviews
+            )
+
+            return gemini_service.generate_voc_report(
+                question=question,
+                reviews=review_text,
+            )
+
+        except Exception as e:
+            print(e)
+            return "VOC 분석 중 오류가 발생했습니다."

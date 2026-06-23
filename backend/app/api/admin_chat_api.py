@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal
-from app.models.review import Review
 from app.schemas.chat_schema import (
     ChatRequest,
     ChatResponse,
@@ -33,22 +32,18 @@ def chat(
     request: ChatRequest,
     db: Session = Depends(get_db),
 ):
-
-    reviews = (
-        db.query(Review)
-        .filter(Review.sentiment == "negative")
-        .all()
-    )
     if not request.question.strip():
         raise HTTPException(
             status_code=400,
             detail="질문을 입력해주세요.",
         )
+
     answer = AdminChatService.answer_with_rag(
         question=request.question,
         db=db,
+        product_id=request.product_id,
     )
 
     return ChatResponse(
-        answer=answer
+        answer=answer,
     )
