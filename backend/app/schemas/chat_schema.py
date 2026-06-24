@@ -7,5 +7,13 @@ class ChatRequest(BaseModel):
     category: str | None = None
 
 
+class RiskProductItem(BaseModel):
+    product_id: int
+    product_name: str
+    category: str
+    negative_count: int
+
+
 class ChatResponse(BaseModel):
     answer: str
+    risk_products: list[RiskProductItem] = []
