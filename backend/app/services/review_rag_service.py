@@ -32,6 +32,7 @@ class ReviewRagService:
         db,
         limit: int = 10,
         product_id: int | None = None,
+        category: str | None = None
     ):
         query_embedding = EmbeddingService.embed(question)
 
@@ -74,7 +75,11 @@ class ReviewRagService:
                 "r.product_id = :product_id"
             )
             params["product_id"] = product_id
-
+            
+        if category is not None:
+            where_conditions.append("p.category = :category")
+            params["category"] = category
+            
         if where_conditions:
             where_clause = " AND ".join(where_conditions)
 
@@ -98,6 +103,7 @@ class ReviewRagService:
                             ) AS rn
                         FROM review_documents rd
                         JOIN reviews r ON r.id = rd.review_id
+                        JOIN products p ON p.id = r.product_id
                         WHERE {where_clause}
                     ) ranked
                     WHERE rn = 1
@@ -153,6 +159,7 @@ class ReviewRagService:
         sentiment: str,
         limit: int = 5,
         product_id: int | None = None,
+        category: str | None = None
     ):
         query_embedding = EmbeddingService.embed(question)
 
@@ -191,6 +198,12 @@ class ReviewRagService:
             )
             params["product_id"] = product_id
             
+        if category is not None:
+            where_conditions.append(
+                "p.category = :category"
+            )
+            params["category"] = category
+
         where_clause = " AND ".join(where_conditions)
 
         results = db.execute(
@@ -213,6 +226,7 @@ class ReviewRagService:
                         ) AS rn
                     FROM review_documents rd
                     JOIN reviews r ON r.id = rd.review_id
+                    JOIN products p ON p.id = r.product_id
                     WHERE {where_clause}
                 ) ranked
                 WHERE rn = 1

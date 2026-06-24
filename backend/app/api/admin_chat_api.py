@@ -42,6 +42,7 @@ def chat(
         question=request.question,
         db=db,
         product_id=request.product_id,
+        category=request.category,
     )
 
     return ChatResponse(

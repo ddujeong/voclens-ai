@@ -12,6 +12,7 @@ class AdminChatService:
         question: str,
         db,
         product_id: int | None = None,
+        category: str | None = None
     ) -> str:
 
         sentiment_filter = detect_query_sentiment(question)
@@ -25,6 +26,7 @@ class AdminChatService:
                     sentiment="positive",
                     limit=5,
                     product_id=product_id,
+                    category=category
                 )
 
                 negative_results = ReviewRagService.search_by_sentiment(
@@ -33,6 +35,7 @@ class AdminChatService:
                     sentiment="negative",
                     limit=5,
                     product_id=product_id,
+                    category=category
                 )
 
                 positive_reviews = [
@@ -59,6 +62,7 @@ class AdminChatService:
                 db=db,
                 limit=5,
                 product_id=product_id,
+                category=category
             )
 
             related_reviews = [
