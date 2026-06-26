@@ -14,6 +14,8 @@ type RiskProduct = {
 type ChatResponse = {
     answer: string;
     risk_products?: RiskProduct[];
+    category?: string | null;
+    tag?: string | null;
 };
 
 export default function AdminChat() {
@@ -21,6 +23,8 @@ export default function AdminChat() {
     const [answer, setAnswer] = useState("");
     const [riskProducts, setRiskProducts] = useState<RiskProduct[]>([]);
     const [loading, setLoading] = useState(false);
+    const [selectedTag, setSelectedTag] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
     const handleAsk = async () => {
         if (!question.trim()) return;
@@ -32,6 +36,8 @@ export default function AdminChat() {
 
             setAnswer(result.answer);
             setRiskProducts(result.risk_products ?? []);
+            setSelectedCategory(result.category ?? null);
+            setSelectedTag(result.tag ?? null);
         } catch (error) {
             console.error(error);
             alert("챗봇 요청 실패");
@@ -41,16 +47,19 @@ export default function AdminChat() {
     };
 
     const handleProductAnalyze = async (product: RiskProduct) => {
-        const productQuestion = `${product.product_name} 상품의 VOC를 분석해줘`;
+
+        const tagText = selectedTag ?? "전체";
+        const productQuestion = `${product.product_name} 상품의 ${tagText} 관련 VOC를 분석해줘`;
 
         try {
             setLoading(true);
             setQuestion(productQuestion);
-
+            setSelectedCategory(product.category);
+            setSelectedTag(tagText === "전체" ? null : tagText);
             const result: ChatResponse = await askAdminChat(
                 productQuestion,
                 product.product_id,
-                null
+                product.category
             );
 
             setAnswer(result.answer);
@@ -81,7 +90,12 @@ export default function AdminChat() {
                     {loading ? "분석 중..." : "질문하기"}
                 </button>
             </section>
-
+            {selectedTag && (
+                <div className="mb-4 rounded border p-3 text-sm text-gray-600">
+                    <div>분석 기준: {selectedTag}</div>
+                    {selectedCategory && <div>카테고리: {selectedCategory}</div>}
+                </div>
+            )}
             {answer && (
                 <section className="rounded border p-4">
                     <h2 className="text-lg font-bold">답변</h2>
