@@ -38,13 +38,11 @@ def chat(
             detail="질문을 입력해주세요.",
         )
 
-    answer = AdminChatService.answer_with_rag(
+    result = AdminChatService.answer_with_rag(
         question=request.question,
         db=db,
         product_id=request.product_id,
         category=request.category,
     )
 
-    return ChatResponse(
-        answer=answer,
-    )
+    return ChatResponse(**result)

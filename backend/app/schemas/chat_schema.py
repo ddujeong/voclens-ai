@@ -17,3 +17,5 @@ class RiskProductItem(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     risk_products: list[RiskProductItem] = []
+    category: str | None = None
+    tags: str | None = None

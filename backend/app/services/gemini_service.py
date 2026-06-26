@@ -297,3 +297,66 @@ class GeminiService:
         )
 
         return response.text
+    
+    def parse_admin_intent(
+        self,
+        question: str,
+    ) -> dict:
+        prompt = f"""
+    다음 쇼핑몰 관리자 질문의 의도를 JSON으로 분류하세요.
+
+    질문:
+    {question}
+
+    action은 아래 중 하나입니다.
+    - risk_products: 특정 카테고리에서 부정 리뷰가 많은 상품을 찾는 요청
+    - voc_analysis: 리뷰/VOC 내용을 분석하거나 요약하는 요청
+
+    category는 아래 중 하나 또는 null:
+    여성의류, 남성의류, 패션슈즈, 잡화
+
+    tag는 아래 중 하나 또는 null:
+    사이즈, 가격, 색상, 디자인, 소재, 품질, 착용감, 착화감, 사용성, 활용성, 내구성, 수납
+
+    반드시 JSON만 출력하세요.
+
+    예시:
+    {{
+    "action": "risk_products",
+    "category": "여성의류",
+    "tag": "사이즈"
+    }}
+    """
+
+        response = self.client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+        )
+
+        try:
+            raw_text = response.text.strip()
+            raw_text = raw_text.replace("```json", "")
+            raw_text = raw_text.replace("```", "")
+            raw_text = raw_text.strip()
+
+            result = json.loads(raw_text)
+
+            action = result.get("action", "voc_analysis")
+            category = result.get("category")
+            tag = result.get("tag")
+
+            if action not in ["risk_products", "voc_analysis"]:
+                action = "voc_analysis"
+
+            return {
+                "action": action,
+                "category": category,
+                "tag": tag,
+            }
+
+        except Exception:
+            return {
+                "action": "voc_analysis",
+                "category": None,
+                "tag": None,
+            }

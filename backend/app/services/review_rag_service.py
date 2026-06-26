@@ -2,6 +2,21 @@ from sqlalchemy import text
 from app.services.embedding_service import EmbeddingService
 from app.services.review_classifier_service import review_classifier_service
 
+CATEGORIES = [
+    "여성의류",
+    "남성의류",
+    "패션슈즈",
+    "잡화",
+]
+
+
+def extract_category(question: str) -> str | None:
+    for category in CATEGORIES:
+        if category in question:
+            return category
+
+    return None
+
 def detect_query_sentiment(question: str) -> str | None:
     q = question.lower()
 

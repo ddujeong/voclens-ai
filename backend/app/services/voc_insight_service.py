@@ -14,8 +14,8 @@ class VocInsightService:
             text(
                 """
                 SELECT
-                    p.id,
-                    p.name,
+                    p.id AS product_id,
+                    p.name AS product_name,
                     p.category,
                     COUNT(*) AS negative_count
                 FROM reviews r
