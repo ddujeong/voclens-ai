@@ -11,18 +11,39 @@ export default function Header() {
                     VOCLens
                 </Link>
 
-                <nav className="flex items-center gap-8 text-sm font-medium">
-                    <Link href="/products">Home</Link>
-                    <Link href="/products?category=여성의류">
+                <nav className="flex items-center gap-8 text-sm font-medium text-gray-700">
+                    <Link
+                        href="/products"
+                        className="transition hover:text-blue-600"
+                    >
+                        Home
+                    </Link>
+
+                    <Link
+                        href="/products?category=여성의류"
+                        className="transition hover:text-blue-600"
+                    >
                         여성의류
                     </Link>
-                    <Link href="/products?category=남성의류">
+
+                    <Link
+                        href="/products?category=남성의류"
+                        className="transition hover:text-blue-600"
+                    >
                         남성의류
                     </Link>
-                    <Link href="/products?category=패션슈즈">
+
+                    <Link
+                        href="/products?category=패션슈즈"
+                        className="transition hover:text-blue-600"
+                    >
                         패션슈즈
                     </Link>
-                    <Link href="/products?category=잡화">
+
+                    <Link
+                        href="/products?category=잡화"
+                        className="transition hover:text-blue-600"
+                    >
                         잡화
                     </Link>
                 </nav>
