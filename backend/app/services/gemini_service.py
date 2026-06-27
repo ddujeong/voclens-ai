@@ -366,3 +366,42 @@ JSON 형식:
                 "category": None,
                 "tag": None,
             }
+    
+    def generate_product_summary(
+        self,
+        reviews: list[str],
+    ) -> dict:
+        review_text = "\n".join(
+            f"- {review}"
+            for review in reviews[:20]
+        )
+
+        prompt = f"""
+    당신은 쇼핑몰 리뷰 분석 AI입니다.
+
+    리뷰:
+    {review_text}
+
+    반드시 JSON만 출력하세요.
+
+    JSON 형식:
+    {{
+    "summary": "리뷰 전체를 요약한 핵심 내용 1문장",
+    "positive": ["장점 1", "장점 2"],
+    "negative": ["아쉬운 점 1", "아쉬운 점 2"]
+    }}
+
+    작성 규칙:
+    1. 반드시 제공된 리뷰만 근거로 작성하세요.
+    2. positive와 negative는 각각 최대 2개만 작성하세요.
+    3. 각 문장은 40자 이내로 작성하세요.
+    4. 긍정/부정 내용이 없으면 빈 배열로 두세요.
+    5. JSON 외의 설명 문장은 출력하지 마세요.
+    """
+
+        response = self.client.models.generate_content(
+            model=MODEL_NAME,
+            contents=prompt,
+        )
+
+        return self._parse_json_response(response.text)

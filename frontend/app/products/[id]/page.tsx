@@ -1,4 +1,7 @@
-import { getProduct } from "@/services/product";
+import {
+    getProduct,
+    getProductSummary,
+} from "@/services/product";
 import { getReviews } from "@/services/review";
 import { Product } from "@/types/product";
 import { Review } from "@/types/review";
@@ -9,6 +12,12 @@ interface ProductDetailPageProps {
         id: string;
     }>;
 }
+
+type ProductSummary = {
+    summary: string;
+    positive: string[];
+    negative: string[];
+};
 
 const CATEGORY_ICON: Record<string, string> = {
     여성의류: "👗",
@@ -43,6 +52,7 @@ export default async function ProductDetailPage({
 
     const product: Product = await getProduct(id);
     const reviews: Review[] = await getReviews(id);
+    const summary: ProductSummary = await getProductSummary(id);
 
     const ratingCounts = getRatingCounts(reviews);
     const maxRatingCount = Math.max(
@@ -161,6 +171,50 @@ export default async function ProductDetailPage({
                                     </span>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+
+                    <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <h2 className="text-2xl font-bold text-gray-900">
+                            AI 리뷰 요약
+                        </h2>
+
+                        <p className="mt-4 leading-7 text-gray-700">
+                            {summary.summary}
+                        </p>
+
+                        <div className="mt-6 space-y-5">
+                            <div>
+                                <h3 className="font-semibold text-gray-900">
+                                    👍 장점
+                                </h3>
+
+                                <ul className="mt-2 space-y-2 text-sm text-gray-700">
+                                    {summary.positive.length === 0 ? (
+                                        <li>확인된 장점이 없습니다.</li>
+                                    ) : (
+                                        summary.positive.map((item) => (
+                                            <li key={item}>• {item}</li>
+                                        ))
+                                    )}
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h3 className="font-semibold text-gray-900">
+                                    👎 아쉬운 점
+                                </h3>
+
+                                <ul className="mt-2 space-y-2 text-sm text-gray-700">
+                                    {summary.negative.length === 0 ? (
+                                        <li>확인된 아쉬운 점이 없습니다.</li>
+                                    ) : (
+                                        summary.negative.map((item) => (
+                                            <li key={item}>• {item}</li>
+                                        ))
+                                    )}
+                                </ul>
+                            </div>
                         </div>
                     </div>
 

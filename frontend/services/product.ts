@@ -23,3 +23,20 @@ export async function getProduct(productId: string) {
 
     return response.json();
 }
+
+export async function getProductSummary(
+    productId: string
+) {
+    const response = await fetch(
+        `${BASE_URL}/products/${productId}/summary`,
+        {
+            cache: "no-store",
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error("AI 리뷰 요약 조회 실패");
+    }
+
+    return response.json();
+}
