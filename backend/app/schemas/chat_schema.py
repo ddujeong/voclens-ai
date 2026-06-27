@@ -14,8 +14,17 @@ class RiskProductItem(BaseModel):
     negative_count: int
 
 
+class VocAnalysis(BaseModel):
+    summary: str
+    positive: list[str]
+    negative: list[str]
+    insight: str
+    improvements: list[str]
+
+
 class ChatResponse(BaseModel):
     answer: str
+    analysis: VocAnalysis | None = None
     risk_products: list[RiskProductItem] = []
     category: str | None = None
     tag: str | None = None

@@ -33,6 +33,7 @@ class AdminChatService:
             if category is None or intent_tag is None:
                 return {
                     "answer": "카테고리와 VOC 항목을 확인하지 못했습니다. 예: 여성의류에서 사이즈 불만 많은 상품 찾아줘",
+                    "analysis": None,
                     "risk_products": [],
                     "category": category,
                     "tag": intent_tag,
@@ -47,6 +48,7 @@ class AdminChatService:
             if not rows:
                 return {
                     "answer": f"{category} 카테고리에서 {intent_tag} 관련 부정 리뷰가 많은 상품을 찾지 못했습니다.",
+                    "analysis": None,
                     "risk_products": [],
                     "category": category,
                     "tag": intent_tag,
@@ -54,6 +56,7 @@ class AdminChatService:
 
             return {
                 "answer": f"{category} 카테고리에서 {intent_tag} 관련 부정 리뷰가 많은 상품입니다.",
+                "analysis": None,
                 "risk_products": [
                     {
                         "product_id": row.product_id,
@@ -102,21 +105,24 @@ class AdminChatService:
                 if not positive_reviews and not negative_reviews:
                     return {
                         "answer": "질문과 관련된 리뷰 데이터를 찾지 못했습니다.",
+                        "analysis": None,
                         "risk_products": [],
                         "category": category,
                         "tag": intent_tag,
                     }
 
+                analysis = gemini_service.generate_voc_comparison_report(
+                    question=question,
+                    positive_reviews=positive_reviews,
+                    negative_reviews=negative_reviews,
+                )
+
                 return {
-                    "answer": gemini_service.generate_voc_comparison_report(
-                        question=question,
-                        positive_reviews=positive_reviews,
-                        negative_reviews=negative_reviews,
-                    ),
+                    "answer": analysis.get("summary", ""),
+                    "analysis": analysis,
                     "risk_products": [],
                     "category": category,
                     "tag": intent_tag,
-
                 }
 
             rag_results = ReviewRagService.search(
@@ -135,6 +141,7 @@ class AdminChatService:
             if not related_reviews:
                 return {
                     "answer": "질문과 관련된 리뷰 데이터를 찾지 못했습니다.",
+                    "analysis": None,
                     "risk_products": [],
                     "category": category,
                     "tag": intent_tag,
@@ -145,11 +152,14 @@ class AdminChatService:
                 for review in related_reviews
             )
 
+            analysis = gemini_service.generate_voc_report(
+                question=question,
+                reviews=review_text,
+            )
+
             return {
-                "answer": gemini_service.generate_voc_report(
-                    question=question,
-                    reviews=review_text,
-                ),
+                "answer": analysis.get("summary", ""),
+                "analysis": analysis,
                 "risk_products": [],
                 "category": category,
                 "tag": intent_tag,
@@ -159,5 +169,8 @@ class AdminChatService:
             print(e)
             return {
                 "answer": "VOC 분석 중 오류가 발생했습니다.",
+                "analysis": None,
                 "risk_products": [],
+                "category": category,
+                "tag": intent_tag,
             }
