@@ -57,18 +57,9 @@ class AdminChatService:
             return {
                 "answer": f"{category} 카테고리에서 {intent_tag} 관련 부정 리뷰가 많은 상품입니다.",
                 "analysis": None,
-                "risk_products": [
-                    {
-                        "product_id": row.product_id,
-                        "product_name": row.product_name,
-                        "category": row.category,
-                        "negative_count": row.negative_count,
-                    }
-                    for row in rows
-                ],
+                "risk_products": rows,
                 "category": category,
                 "tag": intent_tag,
-
             }
         sentiment_filter = detect_query_sentiment(question)
 

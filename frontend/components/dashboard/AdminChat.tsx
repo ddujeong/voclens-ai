@@ -78,6 +78,15 @@ export default function AdminChat() {
 
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const loadingTexts = [
+        "리뷰를 분석하는 중...",
+        "감성을 분류하는 중...",
+        "운영 인사이트를 생성하는 중...",
+        "VOC를 요약하는 중...",
+    ];
+
+    const loadingText =
+        loadingTexts[messages.length % loadingTexts.length];
 
     const handleAsk = async () => {
         const trimmedQuestion = question.trim();
@@ -182,14 +191,14 @@ export default function AdminChat() {
                     <div
                         key={index}
                         className={`flex ${message.role === "user"
-                                ? "justify-end"
-                                : "justify-start"
+                            ? "justify-end"
+                            : "justify-start"
                             }`}
                     >
                         <div
                             className={`rounded-2xl p-3 text-sm leading-6 ${message.role === "user"
-                                    ? "ml-auto max-w-[82%] bg-blue-600 text-white"
-                                    : "mr-auto w-full bg-gray-100 text-gray-900"
+                                ? "ml-auto max-w-[82%] bg-blue-600 text-white"
+                                : "mr-auto w-full bg-gray-100 text-gray-900"
                                 }`}
                         >
                             {!message.analysis && (
@@ -267,8 +276,32 @@ export default function AdminChat() {
 
                 {loading && (
                     <div className="flex justify-start">
-                        <div className="rounded-2xl bg-gray-100 p-4 text-sm text-gray-500">
-                            분석 중...
+                        <div className="rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="flex gap-1">
+                                    <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-blue-500"></span>
+
+                                    <span
+                                        className="h-2.5 w-2.5 animate-bounce rounded-full bg-blue-500"
+                                        style={{ animationDelay: "0.15s" }}
+                                    />
+
+                                    <span
+                                        className="h-2.5 w-2.5 animate-bounce rounded-full bg-blue-500"
+                                        style={{ animationDelay: "0.3s" }}
+                                    />
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-900">
+                                        🤖 AI 운영 비서
+                                    </p>
+
+                                    <p className="text-xs text-gray-500">
+                                        {loadingText}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
