@@ -1,4 +1,5 @@
 from sqlalchemy import text
+import math
 
 
 class VocInsightService:
@@ -39,4 +40,22 @@ class VocInsightService:
             },
         )
 
-        return result.fetchall()
+        rows = result.fetchall()
+
+        risk_products = []
+
+        for row in rows:
+            risk_score = round(
+                row.negative_count * math.log(row.negative_count + 1),
+                1,
+            )
+
+            risk_products.append({
+                "product_id": row.product_id,
+                "product_name": row.product_name,
+                "category": row.category,
+                "negative_count": row.negative_count,
+                "risk_score": risk_score,
+            })
+
+        return risk_products

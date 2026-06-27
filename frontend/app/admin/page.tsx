@@ -1,30 +1,35 @@
 import FloatingAdminChat from "@/components/dashboard/FloatingAdminChat";
-import { getKpi, getProductStats, getVoc, getSentiment } from "@/services/dashboard";
+import {
+    getKpi,
+    getProductStats,
+    getVoc,
+    getSentiment,
+} from "@/services/dashboard";
 import VocKeywordChart from "@/components/dashboard/VocKeywordChart";
 import SentimentDonutChart from "@/components/dashboard/SentimentDonutChart";
 
-const getRiskColor = (rate: number) => {
-    if (rate >= 70) return "bg-red-500";
-    if (rate >= 40) return "bg-yellow-500";
-    return "bg-emerald-500";
+type ProductStat = {
+    product_id: number;
+    product_name: string;
+    total_reviews: number;
+    negative_reviews: number;
+    negative_rate: number;
 };
 
 export default async function AdminDashboardPage() {
     const kpi = await getKpi();
     const voc = await getVoc();
-    const productStats = await getProductStats();
+    const productStats: ProductStat[] = await getProductStats();
     const sentiment = await getSentiment();
 
-
     const topRiskProducts = [...productStats]
-        .sort((a, b) => {
-            if (b.negative_rate !== a.negative_rate) {
-                return b.negative_rate - a.negative_rate;
-            }
-
-            return b.negative_reviews - a.negative_reviews;
-        })
+        .sort((a, b) => b.negative_reviews - a.negative_reviews)
         .slice(0, 8);
+
+    const maxNegative = Math.max(
+        ...topRiskProducts.map((item) => item.negative_reviews),
+        1
+    );
 
     return (
         <>
@@ -77,16 +82,12 @@ export default async function AdminDashboardPage() {
 
                 <section className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
                     <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-900">
-                                    VOC TOP 키워드
-                                </h2>
-                                <p className="mt-1 text-sm text-gray-500">
-                                    고객 리뷰에서 많이 언급된 불만 항목
-                                </p>
-                            </div>
-                        </div>
+                        <h2 className="text-xl font-bold text-gray-900">
+                            VOC TOP 키워드
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-500">
+                            고객 리뷰에서 많이 언급된 불만 항목
+                        </p>
 
                         <div className="mt-6">
                             <VocKeywordChart data={voc.top_complaints} />
@@ -102,70 +103,68 @@ export default async function AdminDashboardPage() {
                         </p>
 
                         <div className="mt-6">
-                            <SentimentDonutChart
-                                data={sentiment}
-                            />
+                            <SentimentDonutChart data={sentiment} />
                         </div>
                     </div>
                 </section>
 
                 <section className="mt-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h2 className="text-xl font-bold text-gray-900">
-                                상품별 부정 리뷰 위험도
-                            </h2>
+                    <h2 className="text-xl font-bold text-gray-900">
+                        상품별 부정 리뷰 TOP
+                    </h2>
 
-                            <p className="mt-1 text-sm text-gray-500">
-                                부정 리뷰 비율이 높은 상품을 우선적으로 확인하세요.
-                            </p>
-                        </div>
-                    </div>
+                    <p className="mt-1 text-sm text-gray-500">
+                        부정 리뷰가 많이 누적된 상품을 우선적으로 확인하세요.
+                    </p>
 
                     <div className="mt-6 space-y-4">
-                        {topRiskProducts.map(
-                            (item: {
-                                product_id: number;
-                                product_name: string;
-                                total_reviews: number;
-                                negative_reviews: number;
-                                negative_rate: number;
-                            }) => (
+                        {topRiskProducts.map((item, index) => {
+                            const width =
+                                (item.negative_reviews / maxNegative) * 100;
+
+                            return (
                                 <div
                                     key={item.product_id}
-                                    className="rounded-2xl border border-gray-100 bg-gray-50 p-4"
+                                    className="rounded-2xl border border-gray-100 bg-gray-50 px-5 py-3"
                                 >
                                     <div className="flex items-start justify-between gap-4">
-                                        <div>
-                                            <p className="line-clamp-1 font-semibold text-gray-900">
-                                                {item.product_name}
-                                            </p>
+                                        <div className="flex min-w-0 items-start gap-3">
+                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500 text-sm font-bold text-white">
+                                                {index + 1}
+                                            </div>
 
-                                            <p className="mt-1 text-sm text-gray-500">
-                                                리뷰 {item.total_reviews}건 · 부정{" "}
-                                                {item.negative_reviews}건
-                                            </p>
+                                            <div className="min-w-0">
+                                                <p className="line-clamp-1 font-semibold text-gray-900">
+                                                    {item.product_name}
+                                                </p>
+
+                                                <p className="mt-1 text-sm text-gray-500">
+                                                    리뷰 {item.total_reviews}건 · 부정{" "}
+                                                    {item.negative_reviews}건
+                                                </p>
+                                            </div>
                                         </div>
 
-                                        <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
-                                            {item.negative_rate}%
+                                        <span className="shrink-0 rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
+                                            {item.negative_reviews}건
                                         </span>
                                     </div>
 
-                                    <div className="mt-4 h-3 rounded-full bg-gray-200">
+                                    <div className="mt-3 h-2.5 rounded-full bg-gray-200">
                                         <div
-                                            className={`h-3 rounded-full ${getRiskColor(item.negative_rate)}`}
+                                            className="h-2.5 rounded-full bg-red-500"
                                             style={{
-                                                width: `${item.negative_rate}%`,
+                                                width: `${width}%`,
                                             }}
                                         />
                                     </div>
                                 </div>
-                            )
-                        )}
+                            );
+                        })}
                     </div>
                 </section>
             </main>
+
             <FloatingAdminChat />
         </>
     );

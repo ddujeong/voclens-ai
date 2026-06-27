@@ -10,13 +10,21 @@ interface Props {
 export default function ReviewForm({ productId }: Props) {
     const [rating, setRating] = useState(5);
     const [content, setContent] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
     const handleSubmit = async (
         e: React.FormEvent<HTMLFormElement>
     ) => {
         e.preventDefault();
 
+        if (!content.trim()) {
+            alert("리뷰 내용을 입력해주세요.");
+            return;
+        }
+
         try {
+            setSubmitting(true);
+
             await createReview(
                 productId,
                 rating,
@@ -32,47 +40,59 @@ export default function ReviewForm({ productId }: Props) {
         } catch (error) {
             console.error(error);
             alert("리뷰 등록 실패");
+        } finally {
+            setSubmitting(false);
         }
     };
 
     return (
-        <form
-            onSubmit={handleSubmit}
-            className="mt-8 rounded border p-4"
-        >
-            <h2 className="mb-4 text-lg font-bold">
-                리뷰 작성
-            </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+                <p className="text-sm font-semibold text-gray-700">
+                    별점
+                </p>
 
-            <select
-                value={rating}
-                onChange={(e) =>
-                    setRating(Number(e.target.value))
-                }
-                className="mb-4 border p-2"
-            >
-                <option value={5}>5점</option>
-                <option value={4}>4점</option>
-                <option value={3}>3점</option>
-                <option value={2}>2점</option>
-                <option value={1}>1점</option>
-            </select>
+                <div className="mt-3 flex gap-2">
+                    {[1, 2, 3, 4, 5].map((value) => (
+                        <button
+                            key={value}
+                            type="button"
+                            onClick={() => setRating(value)}
+                            className={`text-3xl transition ${value <= rating
+                                    ? "text-yellow-400"
+                                    : "text-gray-300"
+                                }`}
+                        >
+                            ★
+                        </button>
+                    ))}
+                </div>
 
-            <textarea
-                value={content}
-                onChange={(e) =>
-                    setContent(e.target.value)
-                }
-                className="mb-4 w-full border p-2"
-                rows={4}
-                placeholder="리뷰를 작성해주세요"
-            />
+                <p className="mt-2 text-sm text-gray-500">
+                    {rating}점
+                </p>
+            </div>
+
+            <div>
+                <p className="text-sm font-semibold text-gray-700">
+                    리뷰 내용
+                </p>
+
+                <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    className="mt-3 w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:bg-white"
+                    rows={5}
+                    placeholder="상품 사용 후기를 작성해주세요."
+                />
+            </div>
 
             <button
                 type="submit"
-                className="rounded border px-4 py-2"
+                disabled={submitting}
+                className="w-full rounded-2xl bg-blue-600 px-5 py-4 text-sm font-bold text-white transition hover:bg-blue-700 disabled:bg-gray-300"
             >
-                등록
+                {submitting ? "등록 중..." : "리뷰 등록"}
             </button>
         </form>
     );

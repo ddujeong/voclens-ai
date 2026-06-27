@@ -17,6 +17,25 @@ const CATEGORY_ICON: Record<string, string> = {
     잡화: "👜",
 };
 
+const SENTIMENT_LABEL: Record<string, string> = {
+    positive: "만족",
+    negative: "불만",
+    neutral: "보통",
+};
+
+const SENTIMENT_ICON: Record<string, string> = {
+    positive: "😊",
+    negative: "😡",
+    neutral: "😐",
+};
+
+const getRatingCounts = (reviews: Review[]) => {
+    return [5, 4, 3, 2, 1].map((rating) => ({
+        rating,
+        count: reviews.filter((review) => review.rating === rating).length,
+    }));
+};
+
 export default async function ProductDetailPage({
     params,
 }: ProductDetailPageProps) {
@@ -24,6 +43,18 @@ export default async function ProductDetailPage({
 
     const product: Product = await getProduct(id);
     const reviews: Review[] = await getReviews(id);
+
+    const ratingCounts = getRatingCounts(reviews);
+    const maxRatingCount = Math.max(
+        ...ratingCounts.map((item) => item.count),
+        1
+    );
+
+    const averageRating =
+        reviews.length === 0
+            ? 0
+            : reviews.reduce((sum, review) => sum + review.rating, 0) /
+            reviews.length;
 
     return (
         <main className="mx-auto max-w-7xl px-6 py-10">
@@ -41,14 +72,12 @@ export default async function ProductDetailPage({
                         {product.name}
                     </h1>
 
-                    <p className="mt-3 text-gray-600">
-                        {product.brand}
-                    </p>
+                    <p className="mt-3 text-gray-600">{product.brand}</p>
 
                     <div className="mt-5 flex items-center gap-3">
                         <span className="text-yellow-500">★★★★★</span>
                         <span className="text-sm text-gray-500">
-                            리뷰 {reviews.length}건
+                            {averageRating.toFixed(1)} · 리뷰 {reviews.length}건
                         </span>
                     </div>
 
@@ -85,18 +114,68 @@ export default async function ProductDetailPage({
                 </div>
             </section>
 
-            <section className="mt-10 grid gap-8 lg:grid-cols-[1fr_1.4fr]">
-                <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-                    <h2 className="text-2xl font-bold text-gray-900">
-                        리뷰 작성
-                    </h2>
+            <section className="mt-10 grid gap-8 lg:grid-cols-[0.9fr_1.5fr]">
+                <div className="space-y-8">
+                    <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <h2 className="text-2xl font-bold text-gray-900">
+                            리뷰 통계
+                        </h2>
 
-                    <p className="mt-2 text-sm text-gray-500">
-                        작성된 리뷰는 AI VOC 분석에 활용됩니다.
-                    </p>
+                        <div className="mt-5 flex items-end gap-3">
+                            <span className="text-5xl font-extrabold text-gray-900">
+                                {averageRating.toFixed(1)}
+                            </span>
+                            <span className="pb-2 text-yellow-500">
+                                ★★★★★
+                            </span>
+                        </div>
 
-                    <div className="mt-6">
-                        <ReviewForm productId={id} />
+                        <p className="mt-1 text-sm text-gray-500">
+                            총 {reviews.length}개 리뷰 기준
+                        </p>
+
+                        <div className="mt-6 space-y-3">
+                            {ratingCounts.map((item) => (
+                                <div
+                                    key={item.rating}
+                                    className="flex items-center gap-3 text-sm"
+                                >
+                                    <span className="w-12 text-gray-600">
+                                        {item.rating}점
+                                    </span>
+
+                                    <div className="h-2.5 flex-1 rounded-full bg-gray-100">
+                                        <div
+                                            className="h-2.5 rounded-full bg-yellow-400"
+                                            style={{
+                                                width: `${(item.count /
+                                                        maxRatingCount) *
+                                                    100
+                                                    }%`,
+                                            }}
+                                        />
+                                    </div>
+
+                                    <span className="w-10 text-right text-gray-500">
+                                        {item.count}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <h2 className="text-2xl font-bold text-gray-900">
+                            리뷰 작성
+                        </h2>
+
+                        <p className="mt-2 text-sm text-gray-500">
+                            작성된 리뷰는 AI VOC 분석에 활용됩니다.
+                        </p>
+
+                        <div className="mt-6">
+                            <ReviewForm productId={id} />
+                        </div>
                     </div>
                 </div>
 
@@ -117,27 +196,37 @@ export default async function ProductDetailPage({
                                 아직 작성된 리뷰가 없습니다.
                             </div>
                         ) : (
-                            reviews.map((review) => (
-                                <div
-                                    key={review.id}
-                                    className="rounded-2xl border border-gray-100 bg-gray-50 p-5"
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-yellow-500">
-                                            {"★".repeat(review.rating)}
-                                            {"☆".repeat(5 - review.rating)}
-                                        </span>
+                            reviews.map((review) => {
+                                const sentiment = review.sentiment ?? "neutral";
 
-                                        <span className="rounded-full bg-white px-3 py-1 text-xs text-gray-600">
-                                            {review.sentiment ?? "미분석"}
-                                        </span>
+                                return (
+                                    <div
+                                        key={review.id}
+                                        className="rounded-2xl border border-gray-100 bg-gray-50 p-5"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-yellow-500">
+                                                {"★".repeat(review.rating)}
+                                                {"☆".repeat(5 - review.rating)}
+                                            </span>
+
+                                            <span className="rounded-full bg-white px-3 py-1 text-xs text-gray-600">
+                                                {SENTIMENT_ICON[sentiment] ?? "😐"}{" "}
+                                                {SENTIMENT_LABEL[sentiment] ??
+                                                    "미분석"}
+                                            </span>
+                                        </div>
+
+                                        <p className="mt-3 leading-7 text-gray-800">
+                                            {review.content}
+                                        </p>
+
+                                        <p className="mt-3 text-xs text-gray-400">
+                                            {review.created_at?.slice(0, 10)}
+                                        </p>
                                     </div>
-
-                                    <p className="mt-3 leading-7 text-gray-800">
-                                        {review.content}
-                                    </p>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 </div>

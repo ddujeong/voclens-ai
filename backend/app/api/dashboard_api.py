@@ -5,7 +5,7 @@ from app.core.database import SessionLocal
 from app.models.review import Review
 from collections import Counter
 from app.models.product import Product
-
+import math
 from app.schemas.dashboard_schema import (
     DashboardKpiResponse,
     DashboardVocResponse,
@@ -140,7 +140,10 @@ def get_product_review_stats(
         )
 
         negative_rate = 0 if total == 0 else round((negative / total) * 100, 1)
-
+        risk_score = round(
+            negative * math.log(total + 1),
+            1
+        )
         result.append(
             ProductReviewStatResponse(
                 product_id=product.id,
@@ -148,8 +151,14 @@ def get_product_review_stats(
                 total_reviews=total,
                 negative_reviews=negative,
                 negative_rate=negative_rate,
+                risk_score=risk_score
             )
         )
+
+    result.sort(
+        key=lambda item: item.negative_rate,
+        reverse=True,
+    )
 
     return result
 
