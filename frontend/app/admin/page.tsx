@@ -17,12 +17,16 @@ type ProductStat = {
 };
 
 export default async function AdminDashboardPage() {
-    const kpi = await getKpi();
-    const voc = await getVoc();
-    const productStats: ProductStat[] = await getProductStats();
-    const sentiment = await getSentiment();
+    const [kpi, voc, productStats, sentiment] = await Promise.all([
+        getKpi(),
+        getVoc(),
+        getProductStats(),
+        getSentiment(),
+    ]);
 
-    const topRiskProducts = [...productStats]
+    const typedProductStats = productStats as ProductStat[];
+
+    const topRiskProducts = [...typedProductStats]
         .sort((a, b) => b.negative_reviews - a.negative_reviews)
         .slice(0, 8);
 
