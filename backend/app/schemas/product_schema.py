@@ -8,5 +8,8 @@ class ProductResponse(BaseModel):
     category: str
     price: int
 
+    average_rating: float
+    review_count: int
+
     class Config:
         from_attributes = True

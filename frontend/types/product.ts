@@ -4,4 +4,7 @@ export interface Product {
     brand: string;
     category: string;
     price: number;
+
+    average_rating?: number;
+    review_count?: number;
 }

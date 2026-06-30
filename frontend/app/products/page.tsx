@@ -125,46 +125,53 @@ export default async function ProductsPage({
                 </div>
 
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {filteredProducts.map((product) => (
-                        <Link
-                            key={product.id}
-                            href={`/products/${product.id}`}
-                            className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-400 hover:shadow-xl"
-                        >
-                            <div className="flex h-64 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-7xl">
-                                {CATEGORY_ICON[product.category] ?? "🛍️"}
-                            </div>
+                    {filteredProducts.map((product) => {
+                        const stars = Math.round(product.average_rating ?? 0);
 
-                            <div className="space-y-3 p-5">
-                                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-                                    {product.category}
-                                </span>
+                        return (
+                            <Link
+                                key={product.id}
+                                href={`/products/${product.id}`}
+                                className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-400 hover:shadow-xl"
+                            >
+                                <div className="flex h-64 items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 text-7xl">
+                                    {CATEGORY_ICON[product.category] ?? "🛍️"}
+                                </div>
 
-                                <h2 className="line-clamp-2 text-lg font-bold text-gray-900 transition-colors group-hover:text-blue-600">
-                                    {product.name}
-                                </h2>
+                                <div className="space-y-3 p-5">
+                                    <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                                        {product.category}
+                                    </span>
 
-                                <p className="text-sm text-gray-600">
-                                    {product.brand}
-                                </p>
+                                    <h2 className="line-clamp-2 text-lg font-bold text-gray-900 transition-colors group-hover:text-blue-600">
+                                        {product.name}
+                                    </h2>
 
-                                <div className="flex items-center justify-between">
-                                    <p className="text-2xl font-extrabold text-gray-900">
-                                        {product.price.toLocaleString()}원
+                                    <p className="text-sm text-gray-600">
+                                        {product.brand}
                                     </p>
 
-                                    <div className="text-right">
-                                        <div className="text-yellow-500">
-                                            ★★★★★
-                                        </div>
-                                        <p className="text-xs text-gray-400">
-                                            AI 리뷰 분석
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-2xl font-extrabold text-gray-900">
+                                            {product.price.toLocaleString()}원
                                         </p>
+
+                                        <div className="text-right">
+                                            <div className="text-yellow-500">
+                                                {"★".repeat(stars)}
+                                                {"☆".repeat(5 - stars)}
+                                            </div>
+
+                                            <p className="text-xs text-gray-400">
+                                                {(product.average_rating ?? 0).toFixed(1)} · 리뷰{" "}
+                                                {product.review_count ?? 0}건
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </Link>
-                    ))}
+                            </Link>
+                        );
+                    })}
                 </div>
             </section>
         </main>

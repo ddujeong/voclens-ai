@@ -65,7 +65,7 @@ export default async function ProductDetailPage({
             ? 0
             : reviews.reduce((sum, review) => sum + review.rating, 0) /
             reviews.length;
-
+    const filledStars = Math.round(averageRating);
     return (
         <main className="mx-auto max-w-7xl px-6 py-10">
             <section className="grid gap-10 rounded-3xl border border-gray-200 bg-white p-8 shadow-sm lg:grid-cols-2">
@@ -85,7 +85,10 @@ export default async function ProductDetailPage({
                     <p className="mt-3 text-gray-600">{product.brand}</p>
 
                     <div className="mt-5 flex items-center gap-3">
-                        <span className="text-yellow-500">★★★★★</span>
+                        <span className="text-yellow-500">
+                            {"★".repeat(filledStars)}
+                            {"☆".repeat(5 - filledStars)}
+                        </span>
                         <span className="text-sm text-gray-500">
                             {averageRating.toFixed(1)} · 리뷰 {reviews.length}건
                         </span>
@@ -136,7 +139,8 @@ export default async function ProductDetailPage({
                                 {averageRating.toFixed(1)}
                             </span>
                             <span className="pb-2 text-yellow-500">
-                                ★★★★★
+                                {"★".repeat(filledStars)}
+                                {"☆".repeat(5 - filledStars)}
                             </span>
                         </div>
 
@@ -159,7 +163,7 @@ export default async function ProductDetailPage({
                                             className="h-2.5 rounded-full bg-yellow-400"
                                             style={{
                                                 width: `${(item.count /
-                                                        maxRatingCount) *
+                                                    maxRatingCount) *
                                                     100
                                                     }%`,
                                             }}

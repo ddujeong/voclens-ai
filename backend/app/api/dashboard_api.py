@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
+from sqlalchemy import func, case
 from app.core.database import SessionLocal
 from app.models.review import Review
 from collections import Counter
@@ -119,46 +119,42 @@ def get_voc_analysis(
 def get_product_review_stats(
     db: Session = Depends(get_db)
 ):
-    products = db.query(Product).all()
+    negative_case = case(
+        (Review.sentiment == "negative", 1),
+        else_=0,
+    )
+
+    rows = (
+        db.query(
+            Product.id.label("product_id"),
+            Product.name.label("product_name"),
+            func.count(Review.id).label("total_reviews"),
+            func.sum(negative_case).label("negative_reviews"),
+        )
+        .outerjoin(Review, Review.product_id == Product.id)
+        .group_by(Product.id, Product.name)
+        .order_by(func.sum(negative_case).desc())
+        .limit(8)
+        .all()
+    )
 
     result = []
 
-    for product in products:
-        total = (
-            db.query(Review)
-            .filter(Review.product_id == product.id)
-            .count()
-        )
-
-        negative = (
-            db.query(Review)
-            .filter(
-                Review.product_id == product.id,
-                Review.sentiment == "negative"
-            )
-            .count()
-        )
-
+    for row in rows:
+        total = row.total_reviews or 0
+        negative = row.negative_reviews or 0
         negative_rate = 0 if total == 0 else round((negative / total) * 100, 1)
-        risk_score = round(
-            negative * math.log(total + 1),
-            1
-        )
+
         result.append(
             ProductReviewStatResponse(
-                product_id=product.id,
-                product_name=product.name,
+                product_id=row.product_id,
+                product_name=row.product_name,
                 total_reviews=total,
                 negative_reviews=negative,
                 negative_rate=negative_rate,
-                risk_score=risk_score
+                risk_score=negative,
             )
         )
-
-    result.sort(
-        key=lambda item: item.negative_rate,
-        reverse=True,
-    )
 
     return result
 
