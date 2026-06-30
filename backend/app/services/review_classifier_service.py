@@ -11,24 +11,37 @@ MODEL_DIR = (
 
 
 class ReviewClassifierService:
-    def __init__(self):
-        self.tag_model = joblib.load(
-            MODEL_DIR / "tag_classifier.joblib"
-        )
-        self.sentiment_model = joblib.load(
-            MODEL_DIR / "sentiment_classifier.joblib"
-        )
-        self.tag_binarizer = joblib.load(
-            MODEL_DIR / "tag_binarizer.joblib"
-        )
+    tag_model = None
+    sentiment_model = None
+    tag_binarizer = None
 
+    @classmethod
+    def load_models(cls):
+        if cls.tag_model is None:
+            cls.tag_model = joblib.load(
+                MODEL_DIR / "tag_classifier.joblib"
+            )
+
+        if cls.sentiment_model is None:
+            cls.sentiment_model = joblib.load(
+                MODEL_DIR / "sentiment_classifier.joblib"
+            )
+
+        if cls.tag_binarizer is None:
+            cls.tag_binarizer = joblib.load(
+                MODEL_DIR / "tag_binarizer.joblib"
+            )
+
+    @classmethod
     def predict(
-        self,
+        cls,
         text: str,
         threshold: float = 0.35,
         top_k: int = 2,
     ) -> dict:
-        tag_probabilities = self.tag_model.predict_proba([text])
+        cls.load_models()
+
+        tag_probabilities = cls.tag_model.predict_proba([text])
 
         tag_scores = []
 
@@ -37,7 +50,7 @@ class ReviewClassifierService:
 
             tag_scores.append(
                 (
-                    self.tag_binarizer.classes_[idx],
+                    cls.tag_binarizer.classes_[idx],
                     float(positive_probability),
                 )
             )
@@ -56,7 +69,7 @@ class ReviewClassifierService:
         ]
 
         sentiment = str(
-            self.sentiment_model.predict([text])[0]
+            cls.sentiment_model.predict([text])[0]
         )
 
         return {
@@ -64,6 +77,3 @@ class ReviewClassifierService:
             "sentiment": sentiment,
             "tag_scores": tag_scores[:top_k],
         }
-
-
-review_classifier_service = ReviewClassifierService()

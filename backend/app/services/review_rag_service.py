@@ -1,6 +1,6 @@
 from sqlalchemy import text
 from app.services.embedding_service import EmbeddingService
-from app.services.review_classifier_service import review_classifier_service
+from app.services.review_classifier_service import ReviewClassifierService
 
 CATEGORIES = [
     "여성의류",
@@ -51,7 +51,7 @@ class ReviewRagService:
     ):
         query_embedding = EmbeddingService.embed(question)
 
-        intent = review_classifier_service.predict(question, top_k=2)
+        intent = ReviewClassifierService.predict(question, top_k=2)
         query_tags = intent["tags"]
         sentiment_filter = detect_query_sentiment(question)
 
@@ -178,7 +178,7 @@ class ReviewRagService:
     ):
         query_embedding = EmbeddingService.embed(question)
 
-        intent = review_classifier_service.predict(
+        intent = ReviewClassifierService.predict(
             question,
             top_k=2,
         )
